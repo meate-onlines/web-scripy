@@ -2,11 +2,33 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import json
 
 from scrapy import signals
-
+import requests
+import redis
+import time
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+
+def get_proxy_ip():
+    redis_key = 'proxy_ip_key'
+    r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+    if r.get(redis_key):
+        ip_list = json.loads(r.get(redis_key))
+        proxy_ip = 'https://{0}:{1}'.format(ip_list['ip'], ip_list['port'])
+        return proxy_ip
+    else:
+        ip = requests.get('http://api.shenlongip.com/ip?key=i0o3z6gv&pattern=json&count=1&need=1100&protocol=2')
+        ip_list = ip.json()['data'][0]
+        proxy_ip = 'https://{0}:{1}'.format(ip_list['ip'], ip_list['port'])
+        time_array = time.strptime(ip_list['expire'], "%Y-%m-%d %H:%M:%S")
+        stamp = int(time.mktime(time_array))
+        now = int(time.mktime(time.localtime()))
+        des = stamp - now - 20
+        r.set(redis_key, json.dumps(ip_list), des)
+        return proxy_ip
 
 
 class WebeduSpiderMiddleware:
@@ -101,3 +123,12 @@ class WebeduDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ProxyMiddleware:
+    def process_request(self, request, spider):
+        request.meta['proxy'] = get_proxy_ip()
+
+
+if __name__ == '__main__':
+    print(get_proxy_ip())
