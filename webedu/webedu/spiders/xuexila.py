@@ -3,7 +3,6 @@ from scrapy.http import Request
 
 from webedu.items import ArticleItemLoader, WebeduItem
 
-
 class XuexilaSpider(scrapy.Spider):
     name = 'xuexila'
     allowed_domains = ['www.xuexila.com']
@@ -27,10 +26,11 @@ class XuexilaSpider(scrapy.Spider):
     def parse_item_detail(self, response):
         item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
         item_loader.add_css("title", "title::text")
-        item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
-        item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
-        item_loader.add_css("content_text", "#contentText::text")
-        item_loader.add_css("html", "html::text")
+        item_loader.add_css("keywords", "meta[name='keywords']::attr(content)")
+        item_loader.add_css("description", "meta[name='description']::attr(content)")
+        item_loader.add_css("content_text", "#contentText")
+        item_loader.add_value("html", response.text)
+        item_loader.add_value('url', response.url)
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")
@@ -42,13 +42,18 @@ class XuexilaSpider(scrapy.Spider):
                 else:
                     yield Request(request_url, callback=self.parse_item_detail_down)
 
+        yield item_loader.load_item()
+
+
     def parse_item_detail_up(self, response):
         item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
         item_loader.add_css("title", "title::text")
         item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
         item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
-        item_loader.add_css("content_text", "#contentText::text")
+        item_loader.add_css("content_text", "#contentText p")
         item_loader.add_css("html", "html::text")
+        item_loader.add_value('url', response.url)
+        yield item_loader.load_item()
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")
@@ -57,14 +62,16 @@ class XuexilaSpider(scrapy.Spider):
                 request_url = "https:" + url
                 if is_next == 'article_left':
                     yield Request(request_url, callback=self.parse_item_detail_up)
+        yield item_loader.load_item()
 
     def parse_item_detail_down(self, response):
         item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
         item_loader.add_css("title", "title::text")
         item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
         item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
-        item_loader.add_css("content_text", "#contentText::text")
+        item_loader.add_css("content_text", "#contentText p")
         item_loader.add_css("html", "html::text")
+        item_loader.add_value('url', response.url)
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")
@@ -73,3 +80,5 @@ class XuexilaSpider(scrapy.Spider):
                 request_url = "https:" + url
                 if is_next == 'article_right':
                     yield Request(request_url, callback=self.parse_item_detail_down)
+
+        yield item_loader.load_item()

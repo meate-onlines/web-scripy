@@ -4,10 +4,12 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import json
 
-from scrapy import signals
+from scrapy import signals, settings
 import requests
 import redis
 import time
+from scrapy.utils.project import get_project_settings
+import random
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
@@ -16,18 +18,20 @@ def get_proxy_ip():
     redis_key = 'proxy_ip_key'
     r = redis.Redis(host='127.0.0.1', port=6379, db=0)
     if r.get(redis_key):
-        ip_list = json.loads(r.get(redis_key))
+        i_list = json.loads(r.get(redis_key))
+        ip_list = i_list[random.randint(0, len(i_list)-1)]
         proxy_ip = 'https://{0}:{1}'.format(ip_list['ip'], ip_list['port'])
         return proxy_ip
     else:
-        ip = requests.get('http://api.shenlongip.com/ip?key=i0o3z6gv&pattern=json&count=1&need=1100&protocol=2')
-        ip_list = ip.json()['data'][0]
+        settings = get_project_settings()
+        ip = requests.get(settings.get('PR_IP'))
+        ip_list = ip.json()['data'][random.randint(0, len(ip.json()['data'])-1)]
         proxy_ip = 'https://{0}:{1}'.format(ip_list['ip'], ip_list['port'])
         time_array = time.strptime(ip_list['expire'], "%Y-%m-%d %H:%M:%S")
         stamp = int(time.mktime(time_array))
         now = int(time.mktime(time.localtime()))
         des = stamp - now - 20
-        r.set(redis_key, json.dumps(ip_list), des)
+        r.set(redis_key, json.dumps(ip.json()['data']), des)
         return proxy_ip
 
 
