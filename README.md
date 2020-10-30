@@ -11,6 +11,8 @@ requests == 2.24.0
 
 PyMySQL == 0.10.1
 
+Redis == 3.2.0
+
 #SQL
 
 ```CREATE TABLE `proxy_ip` (
