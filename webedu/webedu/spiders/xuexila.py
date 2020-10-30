@@ -73,7 +73,6 @@ class XuexilaSpider(scrapy.Spider):
 
         yield item_loader.load_item()
 
-
     def parse_item_detail_up(self, response):
         # item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
         # item_loader.add_css("title", "title::text")
