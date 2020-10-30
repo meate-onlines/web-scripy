@@ -9,12 +9,12 @@ from itemadapter import ItemAdapter
 import pymysql
 import pymysql.cursors
 from twisted.enterprise import adbapi
+import json
 
 
 class WebeduPipeline:
     def process_item(self, item, spider):
         return item
-
 
 
 class MysqlTwistedPipline(object):
@@ -24,10 +24,10 @@ class MysqlTwistedPipline(object):
     @classmethod
     def from_settings(cls, settings):
         dbparms = dict(
-            host = settings["MYSQL_HOST"],
-            db = settings["MYSQL_DBNAME"],
-            user = settings["MYSQL_USER"],
-            passwd = settings["MYSQL_PASSWORD"],
+            host=settings["MYSQL_HOST"],
+            db=settings["MYSQL_DBNAME"],
+            user=settings["MYSQL_USER"],
+            passwd=settings["MYSQL_PASSWORD"],
             charset='utf8',
             cursorclass=pymysql.cursors.DictCursor,
             use_unicode=True,
@@ -37,17 +37,23 @@ class MysqlTwistedPipline(object):
         return cls(dbpool)
 
     def process_item(self, item, spider):
-        #使用twisted将mysql插入变成异步执行
+        # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
-        query.addErrback(self.handle_error, item, spider) #处理异常
+        query.addErrback(self.handle_error, item, spider)  # 处理异常
         return item
 
     def handle_error(self, failure, item, spider):
-        #处理异步插入的异常
-        print (failure)
+        # 处理异步插入的异常
+        fo = open('log.txt', 'w+')
+        insert_sql, params = item.get_insert_sql()
+        log_str = insert_sql % params
+        fo.write(log_str)
+        fo.close()
+        print(failure)
+
 
     def do_insert(self, cursor, item):
-        #执行具体的插入
-        #根据不同的item 构建不同的sql语句并插入到mysql中
+        # 执行具体的插入
+        # 根据不同的item 构建不同的sql语句并插入到mysql中
         insert_sql, params = item.get_insert_sql()
         cursor.execute(insert_sql, params)

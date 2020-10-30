@@ -2,6 +2,27 @@ import scrapy
 from scrapy.http import Request
 
 from webedu.items import ArticleItemLoader, WebeduItem
+from urllib.parse import urlparse
+import hashlib
+
+
+def item_lod_detail(response):
+    item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
+    item_loader.add_css("title", "title::text")
+    item_loader.add_css("keywords", "meta[name='keywords']::attr(content)")
+    item_loader.add_css("description", "meta[name='description']::attr(content)")
+    item_loader.add_css("content_text", "#contentText p::text")
+    item_loader.add_value('url', response.url)
+    path = urlparse(response.url)
+    m = hashlib.md5()
+    m.update(path.path.encode('utf-8'))
+    name = m.hexdigest() + '.html'
+    fo = open(name, 'w')
+    fo.write(response.text)
+    fo.close()
+    item_loader.add_value("html", name)
+    return item_loader
+
 
 class XuexilaSpider(scrapy.Spider):
     name = 'xuexila'
@@ -24,13 +45,21 @@ class XuexilaSpider(scrapy.Spider):
                 yield Request(request_url, callback=self.parse_item_detail)
 
     def parse_item_detail(self, response):
-        item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
-        item_loader.add_css("title", "title::text")
-        item_loader.add_css("keywords", "meta[name='keywords']::attr(content)")
-        item_loader.add_css("description", "meta[name='description']::attr(content)")
-        item_loader.add_css("content_text", "#contentText")
-        item_loader.add_value("html", response.text)
-        item_loader.add_value('url', response.url)
+        # item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
+        # item_loader.add_css("title", "title::text")
+        # item_loader.add_css("keywords", "meta[name='keywords']::attr(content)")
+        # item_loader.add_css("description", "meta[name='description']::attr(content)")
+        # item_loader.add_css("content_text", "#contentText p::text")
+        # item_loader.add_value('url', response.url)
+        # path = urlparse(response.url)
+        # m = hashlib.md5()
+        # m.update(path.path.encode('utf-8'))
+        # name = m.hexdigest() + '.html'
+        # fo = open(name, 'w')
+        # fo.write(response.text)
+        # fo.close()
+        # item_loader.add_value("html", name)
+        item_loader = item_lod_detail(response)
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")
@@ -46,14 +75,21 @@ class XuexilaSpider(scrapy.Spider):
 
 
     def parse_item_detail_up(self, response):
-        item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
-        item_loader.add_css("title", "title::text")
-        item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
-        item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
-        item_loader.add_css("content_text", "#contentText p")
-        item_loader.add_css("html", "html::text")
-        item_loader.add_value('url', response.url)
-        yield item_loader.load_item()
+        # item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
+        # item_loader.add_css("title", "title::text")
+        # item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
+        # item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
+        # item_loader.add_css("content_text", "#contentText p::text")
+        # item_loader.add_value('url', response.url)
+        # path = urlparse(response.url)
+        # m = hashlib.md5()
+        # m.update(path.path.encode('utf-8'))
+        # name = m.hexdigest() + '.html'
+        # fo = open(name, 'w')
+        # fo.write(response.text)
+        # fo.close()
+        # item_loader.add_value("html", name)
+        item_loader = item_lod_detail(response)
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")
@@ -65,13 +101,21 @@ class XuexilaSpider(scrapy.Spider):
         yield item_loader.load_item()
 
     def parse_item_detail_down(self, response):
-        item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
-        item_loader.add_css("title", "title::text")
-        item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
-        item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
-        item_loader.add_css("content_text", "#contentText p")
-        item_loader.add_css("html", "html::text")
-        item_loader.add_value('url', response.url)
+        # item_loader = ArticleItemLoader(item=WebeduItem(), response=response)
+        # item_loader.add_css("title", "title::text")
+        # item_loader.add_css("keywords", "meta[name='keywords'] meta::attr(content)")
+        # item_loader.add_css("description", "meta[name='description'] meta::attr(content)")
+        # item_loader.add_css("content_text", "#contentText p::text")
+        # item_loader.add_value('url', response.url)
+        # path = urlparse(response.url)
+        # m = hashlib.md5()
+        # m.update(path.path.encode('utf-8'))
+        # name = m.hexdigest() + '.html'
+        # fo = open(name, 'w')
+        # fo.write(response.text)
+        # fo.close()
+        # item_loader.add_value("html", name)
+        item_loader = item_lod_detail(response)
         page = response.css(".wrap .upnext ul li")
         for page_node in page:
             url = page_node.css("a::attr(href)").extract_first("")

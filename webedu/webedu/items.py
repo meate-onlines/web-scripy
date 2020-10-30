@@ -17,7 +17,8 @@ class WebeduItem(scrapy.Item):
     keywords = scrapy.Field()
     description = scrapy.Field()
     content_text = scrapy.Field(
-        input_processor=MapCompose(content_txt)
+        output_processor=Join(separator="$$")
+        # input_processor=MapCompose(content_txt)
     )
     html = scrapy.Field()
     url = scrapy.Field()
@@ -26,14 +27,14 @@ class WebeduItem(scrapy.Item):
         insert_sql = """
             insert into xuexila_article(title, keywords, description, content_text, html, url) values (%s, %s, %s, %s, %s, %s)
         """
-        params = {
+        params = (
             self.get('title', " "),
             self.get('keywords', " "),
             self.get('description', " "),
             self.get('content_text', "获取失败"),
-            self.get('html', "获取失败"),
+            self.get('html', ' '),
             self.get('url', " "),
-        }
+        )
         return insert_sql, params
 
 
