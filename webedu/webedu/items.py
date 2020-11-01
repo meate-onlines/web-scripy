@@ -40,3 +40,30 @@ class WebeduItem(scrapy.Item):
 
 class ArticleItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
+
+
+class ChenyuItem(scrapy.Item):
+    words = scrapy.Field(
+        output_processor=Join(separator="$$")
+    )
+    description = scrapy.Field(
+        output_processor=Join(separator="$$")
+    )
+    title = scrapy.Field()
+
+    def pass_item(self):
+        description = self.get('description', 0)
+        words = self.get('words', 0)
+        title = self.get('title', '')
+        description_list = description.split('$$')
+        words_list = words.split('$$')
+        yu_list = []
+        if words:
+            for index, word in enumerate(words_list):
+                child_dict = {
+                    'word': word,
+                    'description': description_list[index],
+                    'title': title
+                }
+                yu_list.append(child_dict)
+        return yu_list

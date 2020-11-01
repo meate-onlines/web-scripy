@@ -1,3 +1,8 @@
+import os
+import sys
+BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR, 'webedu'))
+
 # Scrapy settings for webedu project
 #
 # For simplicity, this file contains only settings considered important or
@@ -6,7 +11,6 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import os
 BOT_NAME = 'webedu'
 
 SPIDER_MODULES = ['webedu.spiders']
@@ -50,10 +54,10 @@ DOWNLOAD_DELAY = 1
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    # 'webedu.middlewares.WebeduDownloaderMiddleware': 543,
-    'webedu.middlewares.ProxyMiddleware': 543,
-}
+# DOWNLOADER_MIDDLEWARES = {
+#     # 'webedu.middlewares.WebeduDownloaderMiddleware': 543,
+#     'webedu.middlewares.ProxyMiddleware': 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -64,7 +68,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'webedu.pipelines.MysqlTwistedPipline': 1,
+   # 'webedu.pipelines.MysqlTwistedPipline': 1,
+   'webedu.pipelines.chenyuPipline': 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -95,8 +100,4 @@ MYSQL_PASSWORD = 'root'
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.54 Safari/536.5'
 
-PR_IP = ''#换成自己的代理地址的ip
-
-import sys
-BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-sys.path.insert(0, os.path.join(BASE_DIR, 'webedu'))
+PR_IP = 'http://api.shenlongip.com/ip?key=i0o3z6gv&pattern=json&count=15&need=1100&protocol=2'#换成自己的代理地址的ip
